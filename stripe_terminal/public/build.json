@@ -1,0 +1,5 @@
+{
+    "js/stripe-terminal":[
+    	"public/js/stripe_terminal.js",
+	]
+}

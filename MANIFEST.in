@@ -1,0 +1,18 @@
+include MANIFEST.in
+include requirements.txt
+include *.json
+include *.md
+include *.py
+include *.txt
+recursive-include stripe_terminal *.css
+recursive-include stripe_terminal *.csv
+recursive-include stripe_terminal *.html
+recursive-include stripe_terminal *.ico
+recursive-include stripe_terminal *.js
+recursive-include stripe_terminal *.json
+recursive-include stripe_terminal *.md
+recursive-include stripe_terminal *.png
+recursive-include stripe_terminal *.py
+recursive-include stripe_terminal *.svg
+recursive-include stripe_terminal *.txt
+recursive-exclude stripe_terminal *.pyc
