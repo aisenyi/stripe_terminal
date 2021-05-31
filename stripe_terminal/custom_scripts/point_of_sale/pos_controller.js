@@ -52,7 +52,8 @@ erpnext.PointOfSale.Controller = class extends erpnext.PointOfSale.Controller{
 							});
 					}
 					else{
-						assign_stripe_connection_token(this,true);
+						var stripe = new erpnext.PointOfSale.StripeTerminal();
+						stripe.assign_stripe_connection_token(this,true);
 					}
 				}
 			}

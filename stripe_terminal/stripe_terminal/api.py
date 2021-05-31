@@ -54,12 +54,12 @@ def capture_payment_intent(payment_intent_id,sales_invoice_id=None):
 def update_payment_intent(payment_intent_id,sales_invoice_id):
 	if sales_invoice_id:
 		stripe_settings = frappe.db.get_all("Stripe Settings")
-		sales_invoice = frappe.get_doc("Sales Invoice",sales_invoice_id)
+		sales_invoice = frappe.get_doc("POS Invoice",sales_invoice_id)
 		if stripe_settings:
 			gateway_settings = frappe.get_doc("Stripe Settings",stripe_settings[0].name)
 			stripe.api_key = gateway_settings.get_password('secret_key')
 			intent = stripe.PaymentIntent.modify(
 			  payment_intent_id,
-			  metadata = {"Sales Invoice":sales_invoice_id,"Customer":sales_invoice.customer}
+			  metadata = {"POS Invoice":sales_invoice_id,"Customer":sales_invoice.customer}
 			)
 			return intent
