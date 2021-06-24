@@ -8,7 +8,7 @@ import json
 import stripe
 
 @frappe.whitelist(allow_guest=True)
-def get_stripe_terminal_settings(sales_invoice):
+def get_stripe_terminal_settings():
 	try:
 		return frappe.get_single("Stripe Terminal Settings")
 	except Exception as e:
@@ -30,16 +30,30 @@ def payment_intent_creation(sales_invoice):
 	stripe_settings = frappe.db.get_all("Stripe Settings")
 	if stripe_settings:
 		currency = sales_invoice.get("currency")
+		grand_total = sales_invoice.get("grand_total")
 		gateway_settings = frappe.get_doc("Stripe Settings",stripe_settings[0].name)
 		stripe.api_key = gateway_settings.get_password('secret_key')
+		#The amount is multiplied by 100 because the api acceps payments in cents. Had to do around to two decimal places then convert to integer
 		payment_intent = stripe.PaymentIntent.create(
-		  amount = sales_invoice.get("net_total")*100,
+		  amount = int(round(grand_total, 2)*100),
 		  currency= currency.lower(),
 		  payment_method_types = ['card_present'],
 		  capture_method = 'manual',
 		)
 		
 		return payment_intent
+		
+@frappe.whitelist(allow_guest=True)
+def cancel_payment_intent(payment_intent_id,sales_invoice_id=None):
+	stripe_settings = frappe.db.get_all("Stripe Settings")
+	if stripe_settings:
+		gateway_settings = frappe.get_doc("Stripe Settings",stripe_settings[0].name)
+		stripe.api_key = gateway_settings.get_password('secret_key')
+		intent = stripe.PaymentIntent.cancel(
+		  payment_intent_id
+		)
+		return intent
+		
 @frappe.whitelist(allow_guest=True)
 def capture_payment_intent(payment_intent_id,sales_invoice_id=None):
 	stripe_settings = frappe.db.get_all("Stripe Settings")
@@ -50,6 +64,7 @@ def capture_payment_intent(payment_intent_id,sales_invoice_id=None):
 		  payment_intent_id
 		)
 		return intent
+
 @frappe.whitelist(allow_guest=True)
 def update_payment_intent(payment_intent_id,sales_invoice_id):
 	if sales_invoice_id:
