@@ -4,7 +4,6 @@
 		"pos_assets/pos_item_selector.js",
 		"pos_assets/pos_item_cart.js",
 		"pos_assets/pos_item_details.js",
-		"serial_device/custom_scripts/pos_serial_scripts/pos_serial_device.js",
 		"serial_device/custom_scripts/pos_serial_scripts/pos_item_details.js",
 		"pos_assets/pos_number_pad.js",
 		"pos_assets/pos_payment.js",

@@ -150,6 +150,7 @@ erpnext.PointOfSale.StripeTerminal = function(){
 			var amount = row.amount.toFixed(2)*100;
 			var item = {
 				"description": row.item_name,
+				"quantity": Math.round(row.qty),
 				"amount": Math.round(amount)
 			};
 			items.push(item);
