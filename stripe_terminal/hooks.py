@@ -116,9 +116,10 @@ app_include_js = "/assets/stripe_terminal/js/stripe_v1.js"
 # Overriding Methods
 # ------------------------------
 #
-# override_whitelisted_methods = {
-# 	"frappe.desk.doctype.event.event.get_events": "stripe_terminal.event.get_events"
-# }
+override_whitelisted_methods = {
+	#"frappe.desk.doctype.event.event.get_events": "stripe_terminal.event.get_events"
+	"erpnext.accounts.doctype.pos_invoice.pos_invoice.make_sales_return": "stripe_terminal.custom_scripts.controllers.sales_and_purchase_return.make_sales_return"
+}
 #
 # each overriding function accepts a `data` argument;
 # generated from the base implementation of the doctype dashboard,
@@ -126,4 +127,3 @@ app_include_js = "/assets/stripe_terminal/js/stripe_v1.js"
 # override_doctype_dashboards = {
 # 	"Task": "stripe_terminal.task.get_dashboard_data"
 # }
-

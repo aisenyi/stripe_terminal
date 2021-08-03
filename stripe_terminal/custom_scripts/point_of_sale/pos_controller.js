@@ -41,11 +41,17 @@ erpnext.PointOfSale.Controller = class extends erpnext.PointOfSale.Controller{
 							for (var i=0;i<=this.frm.doc.payments.length;i++) {
 								if(this.frm.doc.payments[i] != undefined){
 									
-									 if(this.frm.doc.payments[i].mode_of_payment == "Stripe")
+									 if(this.frm.doc.payments[i].mode_of_payment == "Stripe" && this.frm.doc.payments[i].base_amount != 0)
 									 {
 										if(this.frm.doc.payments[i].amount > 0)
 										{
 											allowSubmit = 0;
+										}
+										else if(this.frm.doc.is_return == 1 && this.frm.doc.payments[i].card_payment_intent){
+											allowSubmit = 0;
+										}
+										else if(this.frm.doc.is_return == 1 && !this.frm.doc.payments[i].card_payment_intent){
+											frappe.throw("This transaction was not paid using a Stripe Payment. Please change the return payment method.");
 										}
 									 }
 								}

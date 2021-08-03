@@ -8,7 +8,7 @@ erpnext.PointOfSale.StripeTerminal = function(){
 	this.assign_stripe_connection_token = function(payment, is_online) {
 		payment_object = payment;
 		is_online = is_online;
-		show_connecting_modal();
+		show_loading_modal('Connecting to Stripe Terminal', 'Please Wait<br>Connecting to Stripe Terminal');
 		frappe.call({
 			method: "stripe_terminal.stripe_terminal.api.get_stripe_terminal_token",
 			freeze: true,
@@ -37,9 +37,9 @@ erpnext.PointOfSale.StripeTerminal = function(){
 
 	}
 
-	function show_loading_modal() {
+	function show_loading_modal(title, message) {
 		loading_dialog = new frappe.ui.Dialog({
-			title: 'Collecting Payments',
+			title: title,
 			fields: [{
 					label: '',
 					fieldname: 'show_dialog',
@@ -51,30 +51,10 @@ erpnext.PointOfSale.StripeTerminal = function(){
 
 		});
 		var html = '<div style="min-height:200px;position: relative;text-align: center;padding-top: 75px;line-height: 25px;font-size: 15px;">';
-		html += '<div style="">Please Wait<br>Collecting Payments</div>';
+		html += '<div style="">' + message + '</div>';
 		html += '</div>';
 		loading_dialog.fields_dict.show_dialog.$wrapper.html(html);
 		loading_dialog.show();
-	}
-	
-	function show_connecting_modal() {
-		connecting_dialog = new frappe.ui.Dialog({
-			title: 'Connecting to Stripe Terminal',
-			fields: [{
-					label: '',
-					fieldname: 'show_dialog',
-					fieldtype: 'HTML'
-
-				},
-
-			],
-
-		});
-		var html = '<div style="min-height:200px;position: relative;text-align: center;padding-top: 75px;line-height: 25px;font-size: 15px;">';
-		html += '<div style="">Please Wait<br>Connecting to Stripe Terminal</div>';
-		html += '</div>';
-		connecting_dialog.fields_dict.show_dialog.$wrapper.html(html);
-		connecting_dialog.show();
 	}
 
 	function unexpectedDisconnect() {
@@ -128,7 +108,8 @@ erpnext.PointOfSale.StripeTerminal = function(){
 										'testPaymentMethod': testCardtype
 									});
 								}
-								connecting_dialog.hide();
+								loading_dialog.hide();
+								//connecting_dialog.hide();
 								//display_details(payment);
 								//collecting_payments(payment, is_online);
 							}
@@ -168,7 +149,60 @@ erpnext.PointOfSale.StripeTerminal = function(){
 	}
 
 	this.collecting_payments = function(payment, is_online) {
-		show_loading_modal();
+		if(payment.frm.doc.is_return == 1){
+			refund_payment(payment, is_online);
+		}
+		else{
+			create_payment(payment, is_online);
+		}
+	}
+	
+	
+	function refund_payment(payment, is_online){
+		show_loading_modal('Refunding Payments', 'Please Wait<br>Refunding Payments');
+		var payments = payment.frm.doc.payments;
+		payments.forEach(function(row){
+			if(row.mode_of_payment == "Stripe"){
+				frappe.call({
+					method: "stripe_terminal.stripe_terminal.api.refund_payment",
+					freeze: true,
+					args: {
+						"payment_intent_id": row.card_payment_intent,
+						"amount": row.base_amount * -1
+					},
+					headers: {
+						"X-Requested-With": "XMLHttpRequest"
+					},
+					callback: function(result){
+						console.log({"refund_result": result});
+						loading_dialog.hide();
+						if (is_online) {
+							payment.frm.savesubmit()
+								.then((sales_invoice) => {
+									if (sales_invoice && sales_invoice.doc) {
+										payment.frm.doc.docstatus = sales_invoice.doc.docstatus;
+										frappe.show_alert({
+											indicator: 'green',
+											message: __(`POS invoice ${sales_invoice.doc.name} created succesfully`)
+										});
+										payment.toggle_components(false);
+										payment.order_summary.toggle_component(true);
+										payment.order_summary.load_summary_of(payment.frm.doc, true);
+									}
+								});
+
+						} else {
+							payment.submit_invoice();
+						}
+					}
+				});
+			}
+		});
+	}
+	
+	
+	function create_payment(payment, is_online){
+		show_loading_modal('Collecting Payments', 'Please Wait<br>Collecting Payments');
 		frappe.call({
 			method: "stripe_terminal.stripe_terminal.api.payment_intent_creation",
 			freeze: true,
@@ -262,7 +296,7 @@ erpnext.PointOfSale.StripeTerminal = function(){
 	
 	function capture_payment(payment, is_online, payment_intent){
 		confirm_dialog.hide();
-		show_loading_modal();
+		show_loading_modal('COllecting Payments', 'Please Wait<br>Collecting Payments');
 		frappe.call({
 			method: "stripe_terminal.stripe_terminal.api.capture_payment_intent",
 			freeze: true,

@@ -78,3 +78,11 @@ def update_payment_intent(payment_intent_id,sales_invoice_id):
 			  metadata = {"POS Invoice":sales_invoice_id,"Customer":sales_invoice.customer}
 			)
 			return intent
+			
+@frappe.whitelist(allow_guest=True)
+def refund_payment(payment_intent_id, amount):
+	refund = stripe.Refund.create(
+		payment_intent=payment_intent_id,
+		amount=amount
+	)
+	return refund
