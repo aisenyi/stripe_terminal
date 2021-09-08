@@ -333,6 +333,15 @@ erpnext.PointOfSale.StripeTerminal = function(){
 				if (is_online) {
 					payment.frm.savesubmit()
 						.then((sales_invoice) => {
+							//For raw printing
+							if(window.open_cash_drawer_automatically == 1){
+								this.open_cash_drawer();
+							}
+							
+							if(window.automatically_print == 1){
+								this.raw_print(this.frm);							
+							}
+							
 							if (sales_invoice && sales_invoice.doc) {
 								payment.frm.doc.docstatus = sales_invoice.doc.docstatus;
 								frappe.show_alert({

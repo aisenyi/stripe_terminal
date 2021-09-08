@@ -9,7 +9,8 @@ erpnext.PointOfSale.Controller = class extends erpnext.PointOfSale.Controller{
 	
 	init_stripe_terminal(){
 		this.stripe = new erpnext.PointOfSale.StripeTerminal();
-		frappe.dom.freeze();		
+		frappe.dom.freeze();
+		//this.stripe.connect_to_stripe_terminal(this, true);	
 		this.stripe.assign_stripe_connection_token(this, true);
 		frappe.dom.unfreeze();
 	}
@@ -143,7 +144,6 @@ erpnext.PointOfSale.Controller = class extends erpnext.PointOfSale.Controller{
 		} catch (error) {
 			console.log(error);
 		} finally {
-			console.log({"cart_loaded": this.frm.doc});
 			this.stripe.display_details(this);
 			frappe.dom.unfreeze();
 			return item_row;
